@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { useEffect, useState } from "react";
 import "./App.css";
 import { IColorState } from "./common/types";
@@ -21,17 +20,21 @@ function App() {
     setColors(colorArr);
   }, []);
 
-  const changeColorEvent = (boxId: number) => {
+  const changeColorEvent = (boxId: string) => {
     if (redCount === 0) {
       setRedToBeRemoved(boxId);
     }
     setColors((prev) => {
       const updatedColorsArr = [...prev];
-      let indexes = boxId.split("");
-      const colorCode = updatedColorsArr[indexes[1]][indexes[3]].colorCode;
+      let [, i_str, , j_str] = boxId.split("");
+      let i = parseInt(i_str);
+      let j = parseInt(j_str);
+      const colorCode = updatedColorsArr[i][j].colorCode;
       if (colorCode === 0) {
         if (redCount === 2) {
-          const [, a, , b] = redToBeRemoved.split("");
+          let [, a_str, , b_str] = redToBeRemoved.split("");
+          let a = parseInt(a_str);
+          let b = parseInt(b_str);
           updatedColorsArr[a][b].colorCode = 0;
           let nextRedToBeRemoved;
           for (let i = 0; i < updatedColorsArr.length; i++) {
@@ -42,11 +45,13 @@ function App() {
               }
             }
           }
-          setRedToBeRemoved(nextRedToBeRemoved.boxId);
+          if (nextRedToBeRemoved !== undefined) {
+            setRedToBeRemoved(nextRedToBeRemoved.boxId);
+          }
         } else {
           setRedCount((prev) => prev + 1);
         }
-        updatedColorsArr[indexes[1]][indexes[3]].colorCode = 1;
+        updatedColorsArr[i][j].colorCode = 1;
       }
       return updatedColorsArr;
     });
@@ -60,13 +65,14 @@ function App() {
           ? "Loading..."
           : new Array(4).fill(0).map((_, i) => {
               return (
-                <div className="row">
+                <div className="row" key={i}>
                   {new Array(4).fill(0).map((_, j) => {
                     return (
                       <Box
                         changeColorEvent={changeColorEvent}
                         color={colors[i][j].colorCode === 0 ? "blue" : "red"}
                         boxId={colors[i][j].boxId}
+                        key={colors[i][j].boxId}
                       />
                     );
                   })}
